@@ -1,22 +1,24 @@
 import ipinfo, asyncio
 
 ip_info = []
+coordinates = []
 
 async def do_req(ip):
-    details = await handler.getDetails(ip)
-    # print("Hostname:", details.hostname)
-    # print("City:", details.city)
-    # print("Location:", details.loc)
-    # print("Country:", details.country)
-    # print("Region:", details.region)
-    # print("Organization:", details.org)
-    # print("Postal Code:", details.postal)
-    # print("Timezone:", details.timezone)
-    # print("Country Name:", details.country_name)
-    # print("Latitude:", details.latitude)
-    # print("Longitude:", details.longitude)
-    ip_info.append(details.all)
-    print("=====================================\n")
+     details = await handler.getDetails(ip)
+     # print("Hostname:", details.hostname)
+     # print("City:", details.city)
+     # print("Location:", details.loc)
+     # print("Country:", details.country)
+     # print("Region:", details.region)
+     # print("Organization:", details.org)
+     # print("Postal Code:", details.postal)
+     # print("Timezone:", details.timezone)
+     # print("Country Name:", details.country_name)
+     # print("Latitude:", details.latitude)
+     # print("Longitude:", details.longitude)
+     # print("=====================================\n")
+     ip_info.append(details.all)
+     coordinates.append((details.latitude, details.longitude))
 
 with open('access_token.txt', 'r') as f:
         access_token = f.read()
@@ -45,3 +47,4 @@ for ip in ip_address:
      loop.run_until_complete(do_req(ip))
 
 print(ip_info)
+print(coordinates)

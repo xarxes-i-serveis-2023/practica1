@@ -1,15 +1,14 @@
 import socket, time,argparse
 from scapy.all import sr1, IP, ICMP
 
-from pprint import pprint
-
 
 class Jumper:
-    def __init__(self, destination:str, interface:str, timeout:int=2, verbose:int=0):
+    def __init__(self, destination:str, interface:str, timeout:int=2, verbose:int=0, max_requests:int=5):
         self.destination = destination
         self.interface = interface
         self.timeout = timeout
         self.verbose = verbose # 0 = silent, 1 = verbose, 2 = very verbose
+        self.max_requests = max_requests
     
     def single_jump(self, ttl:int=1):
         packet=IP(dst=self.destination, ttl=ttl)/ICMP()/"XXXXXXXXX"
@@ -31,7 +30,7 @@ class Jumper:
             if not sent:
                 print("***")
                 not_sent_cnt+=1
-                if not_sent_cnt>5: break
+                if not_sent_cnt>self.max_requests: break
                 continue
 
             not_sent_cnt=0
@@ -61,6 +60,7 @@ if __name__=="__main__":
     parser.add_argument("-t", "--timeout", type=int, help="Timeout for the ping response", default=2)
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity")
     parser.add_argument("-d", "--destination", required=True, help="Destination IP address to ping")
+    parser.add_argument("-m", "--max-requests", type=int, help="Maximum requests to the same destination", default=5)
     args = parser.parse_args()
     
     j=Jumper(destination=args.destination, interface=args.interface, timeout=args.timeout, verbose=args.verbose)

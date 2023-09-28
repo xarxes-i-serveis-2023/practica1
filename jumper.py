@@ -1,5 +1,5 @@
 import socket, time,argparse
-from scapy.all import sr1, IP, ICMP
+from scapy.all import sr1, IP, ICMP 
 
 
 class Jumper:
@@ -13,7 +13,7 @@ class Jumper:
     def single_jump(self, ttl:int=1):
         packet=IP(dst=self.destination, ttl=ttl)/ICMP()/"XXXXXXXXX"
         start_time=time.time()
-        sent=sr1(packet, timeout=self.timeout, verbose=self.verbose)
+        sent=sr1(packet, timeout=self.timeout, verbose=self.verbose, iface=self.interface)
         end_time=time.time()
         
         return end_time-start_time, sent

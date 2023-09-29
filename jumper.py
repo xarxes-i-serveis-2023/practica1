@@ -1,5 +1,5 @@
 import socket, time,argparse
-from scapy.all import sr1, IP, ICMP 
+from scapy.all import sr1, IP, ICMP  # type: ignore
 
 
 class Jumper:

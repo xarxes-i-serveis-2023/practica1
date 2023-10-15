@@ -74,10 +74,10 @@ class Jumper:
         timeout=False
         while ttl<max_ttl:
             timeout=True
-            time_taken, sent=self.single_jump(ttl)
+            time_taken, reply=self.single_jump(ttl)
             ttl+=1
-            
-            if not sent:
+
+            if not reply:
                 print("***")
                 not_sent_cnt+=1
                 if not_sent_cnt>self.max_requests:
@@ -86,19 +86,19 @@ class Jumper:
                 continue
 
             not_sent_cnt=0
-            if prev_ip==sent.src: 
+            if prev_ip==reply.src: 
                 print("REPEATED IP")
                 break
             
-            resolved_ip=self.resolve_ip(sent.src)
-            print(f"{ttl-1} RTT al host=\"{resolved_ip}\" ({sent.src}) = {time_taken*1000} ms")
-            hops.append(sent.src)
+            resolved_ip=self.resolve_ip(reply.src)
+            print(f"{ttl-1} RTT al host=\"{resolved_ip}\" ({reply.src}) = {time_taken*1000} ms")
+            hops.append(reply.src)
             timeout=False
 
-            if sent.src == self.destination:
+            if reply.src == self.destination:
                 print("Hem arribat al desti.")
                 break
-            prev_ip=sent.src
+            prev_ip=reply.src
 
         return timeout, hops
 

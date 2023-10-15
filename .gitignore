@@ -2,3 +2,4 @@ venv/
 access_token.txt
 .vscode/
 .env
+world_map.png

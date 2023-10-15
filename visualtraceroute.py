@@ -1,7 +1,8 @@
-from pprint import pprint
-
-import ipinfo, os
 from dotenv import load_dotenv
+from scapy.all import sr1, IP, ICMP  # type: ignore
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
+import socket, time, argparse, ipinfo, os
 
 class Locator:
     def __init__(self, token:str|None=None, env_file:str=".env") -> None:
@@ -18,9 +19,6 @@ class Locator:
             ip:(float(ip_data[ip]["latitude"]), float(ip_data[ip]["longitude"])) 
             for ip in ips if ip_data[ip]["longitude"] and ip_data[ip]["latitude"]
         }
-
-from mpl_toolkits.basemap import Basemap
-import matplotlib.pyplot as plt
 
 class Mapper:
     def mapit(self, coordinates:list[tuple[float, float]], timeout:bool=False, image_filaname:str|None="world_map.png"):
@@ -46,9 +44,6 @@ class Mapper:
         plt.legend()
         if image_filaname: plt.savefig(image_filaname, bbox_inches='tight')
         plt.show()
-
-import socket, time,argparse
-from scapy.all import sr1, IP, ICMP  # type: ignore
 
 class Jumper:
     def __init__(self, destination:str, interface:str, timeout:int=2, verbose:int=0, max_requests:int=5):

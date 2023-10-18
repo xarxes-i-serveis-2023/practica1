@@ -87,7 +87,7 @@ class Jumper:
             print(f"{ttl-1} RTT al host=\"{self.resolve_ip(reply.src)}\" ({reply.src}) = {time_taken*1000} ms")
             hops.append(reply.src)
 
-            if reply.src == reply.dst or (reply.type == 3 and reply.code == 3):
+            if reply.src == self.destination:
                 print("Hem arribat al desti.")
                 timeout=False
                 break

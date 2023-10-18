@@ -50,7 +50,8 @@ class Jumper:
     INITIAL_UDP_PORT=33434
 
     def __init__(self, destination:str, interface:str, timeout:int=2, verbose:int=0, packet_size:int=60, use_udp:bool=False, max_ttl:int=30):
-        print(f"traceroute to {destination} using ")
+        print(f"visualtraceroute to {destination}, {max_ttl} max hops, {packet_size} byte packets.")
+
         self.destination = destination
         self.interface = interface
         self.timeout = timeout

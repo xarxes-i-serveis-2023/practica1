@@ -100,10 +100,10 @@ class Jumper:
     
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Ping tool using Scapy")
+    parser.add_argument("destination", help="Destination IP address to ping")
     parser.add_argument("-i", "--interface", help="Network interface to use", default=None)
     parser.add_argument("-t", "--timeout", type=int, help="Timeout for the ping response", default=2)
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity", default=False)
-    parser.add_argument("-d", "--destination", required=True, help="Destination IP address to ping")
     parser.add_argument("-m", "--max-ttl", type=int, help="Maximum TTL number", default=30)
     parser.add_argument("-p", "--packet-size", type=int, help="Packet size sent in bytes. Default 60B, minimum 28B.", default=60)
     parser.add_argument("-o", "--output", help="Output image filename", default="world_map.png")
@@ -113,8 +113,12 @@ if __name__=="__main__":
     j=Jumper(destination=args.destination, interface=args.interface, timeout=args.timeout, verbose=args.verbose, packet_size=args.packet_size, use_udp=args.udp, max_ttl=args.max_ttl)
     timeout, ips=j.path_finder()
     
+    print("\nLocating ips...")
+    
     l=Locator()
     locations=l.run(ips)
+    
+    print("\nMapping...")
     
     m=Mapper()
     m.mapit(

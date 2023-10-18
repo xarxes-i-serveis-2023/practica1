@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from scapy.all import sr1, IP, ICMP  # type: ignore
+from scapy.all import sr1, IP, ICMP, UDP  # type: ignore
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import socket, time, argparse, ipinfo, os
@@ -13,7 +13,7 @@ class Locator:
 
     def run(self, ips:list[str]):
         handler = ipinfo.getHandler(self.token)
-        ip_data=handler.getBatchDetails(ips)
+        ip_data = handler.getBatchDetails(ips)
 
         return {
             ip:(float(ip_data[ip]["latitude"]), float(ip_data[ip]["longitude"])) 
@@ -46,54 +46,50 @@ class Mapper:
         plt.show()
 
 class Jumper:
-    def __init__(self, destination:str, interface:str, timeout:int=2, verbose:int=0, max_requests:int=5):
+    PACKER_MIN=28
+    INITIAL_UDP_PORT=33434
+
+    def __init__(self, destination:str, interface:str, timeout:int=2, verbose:int=0, packet_size:int=60, use_udp:bool=False, max_ttl:int=30):
+        print(f"traceroute to {destination} using ")
         self.destination = destination
         self.interface = interface
         self.timeout = timeout
         self.verbose = verbose # 0 = silent, 1 = verbose, 2 = very verbose
-        self.max_requests = max_requests
-    
+        self.packet_size = packet_size
+        if packet_size<self.PACKER_MIN: raise Exception(f"packet can't be smaller than: {self.PACKER_MIN}")
+        self.use_udp = use_udp
+        self.max_ttl = max_ttl
+
     def single_jump(self, ttl:int=1):
-        packet=IP(dst=self.destination, ttl=ttl)/ICMP()/"XXXXXXXXX"
+        packet=IP(dst=self.destination, ttl=ttl) / \
+            ( ICMP() if not self.use_udp else UDP(dport=self.INITIAL_UDP_PORT+ttl)) / \
+                ("X"*(self.packet_size-self.PACKER_MIN))
+
         start_time=time.time()
         sent=sr1(packet, timeout=self.timeout, verbose=self.verbose, iface=self.interface)
         end_time=time.time()
         
         return end_time-start_time, sent
 
-    def path_finder(self, max_ttl:int=255):
+    def path_finder(self):
         hops=[]
         ttl=1
-        not_sent_cnt=0
-        prev_ip=""
-        timeout=False
-        while ttl<max_ttl:
-            timeout=True
+        timeout=True
+        while ttl<self.max_ttl:
             time_taken, reply=self.single_jump(ttl)
             ttl+=1
 
-            if not reply:
+            if reply is None or not reply.haslayer(ICMP) or reply.type not in [0,11,3]:
                 print("***")
-                not_sent_cnt+=1
-                if not_sent_cnt>self.max_requests:
-                    print("TIMEOUT")
-                    break
                 continue
 
-            not_sent_cnt=0
-            if prev_ip==reply.src: 
-                print("REPEATED IP")
-                break
-            
-            resolved_ip=self.resolve_ip(reply.src)
-            print(f"{ttl-1} RTT al host=\"{resolved_ip}\" ({reply.src}) = {time_taken*1000} ms")
+            print(f"{ttl-1} RTT al host=\"{self.resolve_ip(reply.src)}\" ({reply.src}) = {time_taken*1000} ms")
             hops.append(reply.src)
-            timeout=False
 
-            if reply.src == self.destination:
+            if reply.src == reply.dst or (reply.type == 3 and reply.code == 3):
                 print("Hem arribat al desti.")
+                timeout=False
                 break
-            prev_ip=reply.src
 
         return timeout, hops
 
@@ -101,19 +97,19 @@ class Jumper:
         try: return socket.gethostbyaddr(ip)[0]
         except: return ip
     
-
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Ping tool using Scapy")
-
     parser.add_argument("-i", "--interface", help="Network interface to use", default=None)
     parser.add_argument("-t", "--timeout", type=int, help="Timeout for the ping response", default=2)
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity", default=False)
     parser.add_argument("-d", "--destination", required=True, help="Destination IP address to ping")
-    parser.add_argument("-m", "--max-requests", type=int, help="Maximum requests to the same destination", default=5)
+    parser.add_argument("-m", "--max-ttl", type=int, help="Maximum TTL number", default=30)
+    parser.add_argument("-p", "--packet-size", type=int, help="Packet size sent in bytes. Default 60B, minimum 28B.", default=60)
     parser.add_argument("-o", "--output", help="Output image filename", default="world_map.png")
+    parser.add_argument("-u", "--udp", action="store_true", help="Send UDP packets", default=False)
     args = parser.parse_args()
     
-    j=Jumper(destination=args.destination, interface=args.interface, timeout=args.timeout, verbose=args.verbose, max_requests=args.max_requests)
+    j=Jumper(destination=args.destination, interface=args.interface, timeout=args.timeout, verbose=args.verbose, packet_size=args.packet_size, use_udp=args.udp, max_ttl=args.max_ttl)
     timeout, ips=j.path_finder()
     
     l=Locator()

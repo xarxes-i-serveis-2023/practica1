@@ -10,6 +10,8 @@ class Locator:
             load_dotenv(env_file)
             self.token=os.getenv("ACCESS_TOKEN")
         else: self.token=token
+        
+        if self.token is None: raise Exception("No token provided")
 
     def run(self, ips:list[str]):
         handler = ipinfo.getHandler(self.token)
@@ -126,3 +128,4 @@ if __name__=="__main__":
         timeout=timeout, 
         image_filaname=args.output
     )
+    

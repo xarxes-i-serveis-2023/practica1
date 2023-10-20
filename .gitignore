@@ -1,6 +1,6 @@
 venv/
 .venv/
-access_token.txt
+access_token.env
 .vscode/
 .env
 world_map.png

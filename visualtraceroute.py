@@ -34,9 +34,9 @@ class Mapper:
         lats, lons = zip(*coordinates)
         x, y = m(lons, lats)
 
-        m.scatter(x[0], y[0], marker='o', color='green', label='Start', zorder=5)
+        m.scatter(x[0], y[0], marker='o', color='green', label='Start', zorder=6)
         m.scatter(x[1:-2], y[1:-2], marker='o', color='red', label='Nodes', zorder=5)
-        m.scatter(x[-1], y[-1], marker='o' if not timeout else 'x', color='blue' if not timeout else 'black', label='End', zorder=5)
+        m.scatter(x[-1], y[-1], marker='o' if not timeout else 'x', color='blue' if not timeout else 'black', label='End', zorder=6)
 
         for i in range(len(coordinates) - 1):
             x1, y1 = m(coordinates[i][1], coordinates[i][0]) 
